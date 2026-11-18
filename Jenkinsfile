@@ -5,7 +5,7 @@ pipeline {
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-cred'
         DOCKER_IMAGE = '777dockerjohn/my-fastapi-app'
-        SONAR_SERVER_NAME = 'sonarqube_env'
+        SONAR_SERVER_NAME = 'sonarqube-env'
         CONTAINER_NAME = 'fastapi-container'
     }
 
