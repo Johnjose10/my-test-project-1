@@ -4,35 +4,21 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-cred'
-        DOCKER_IMAGE = 'Johnjose10/my-fastapi-app'
-        SONAR_SERVER_NAME = 'sonarqube-env'
-        SONAR_SCANNER = 'sonar-scanner'
+        DOCKER_IMAGE = '777dockerjohn/my-fastapi-app'
+        SONAR_SERVER_NAME = 'sonarqube_env'
         CONTAINER_NAME = 'fastapi-container'
     }
 
     stages {
 
-        stage('Git Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                    python3 --version
-                    pip3 install -r requirements.txt
-                '''
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONAR_SERVER_NAME}") {
-                    sh '''
-                        ${SONAR_SCANNER}/bin/sonar-scanner
-                    '''
+                script {
+                    def scannerHome = tool 'sonar-scanner'
+
+                    withSonarQubeEnv('sonarqube_env') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
                 }
             }
         }
