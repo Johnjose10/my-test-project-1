@@ -4,9 +4,10 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-cred'
-        DOCKER_IMAGE = '777dockerjohn/my-fastapi-app'
-        SONAR_SERVER_NAME = 'sonarqube-env'
-        CONTAINER_NAME = 'fastapi-container'
+        DOCKER_IMAGE          = 'docker777john/my-fastapi-app'
+        SONAR_SERVER_NAME     = 'sonarqube-env'
+        SONAR_SCANNER_TOOL    = 'sonar-scanner'
+        CONTAINER_NAME        = 'fastapi-container'
     }
 
     stages {
@@ -14,10 +15,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    def scannerHome = tool 'sonar-scanner'
+                    def scannerHome = tool "${SONAR_SCANNER_TOOL}"
 
                     withSonarQubeEnv("${SONAR_SERVER_NAME}") {
-                        sh "${scannerHome}/bin/sonar-scanner"
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner
+                        """
                     }
                 }
             }
@@ -42,7 +45,8 @@ pipeline {
                 ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login \
-                        -u "$DOCKER_USER" --password-stdin
+                            -u "$DOCKER_USER" \
+                            --password-stdin
 
                         docker push ${DOCKER_IMAGE}:latest
 
@@ -59,9 +63,10 @@ pipeline {
                     docker rm ${CONTAINER_NAME} || true
 
                     docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 8000:8000 \
-                    ${DOCKER_IMAGE}:latest
+                        --name ${CONTAINER_NAME} \
+                        -p 8000:8000 \
+                        --restart unless-stopped \
+                        ${DOCKER_IMAGE}:latest
                 '''
             }
         }
@@ -73,7 +78,11 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline failed. Check Jenkins console output.'
+            echo 'Pipeline failed. Check Jenkins Console Output.'
+        }
+
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
